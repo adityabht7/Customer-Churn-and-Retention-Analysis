@@ -5,8 +5,17 @@
 [![Standards: ISO 10816-3](https://img.shields.io/badge/Standard-ISO%2010816--3-emerald.svg?style=flat-square)](https://www.iso.org/)
 [![Diagnostics: ISO 13374](https://img.shields.io/badge/Standard-ISO%2013374-sky.svg?style=flat-square)](https://www.iso.org/)
 [![Build: Tests Passing](https://img.shields.io/badge/Tests-21%2F21%20Passing-success.svg?style=flat-square)](tests/)
+[![Deploy on Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/deploy?repository=adityabht7/Predictive-Maintenance-Copilot-IIoT&branch=main&mainModule=app.py)
 
 An industrial condition monitoring and prognostic reliability platform for critical rotating machinery. Combines high-frequency vibration signal processing, multi-class failure classification, Remaining Useful Life (RUL) regression, and an automated Computerized Maintenance Management System (CMMS) copilot with ISO 10816-3 compliance.
+
+---
+
+## Live Deployment & Cloud Access
+
+- **GitHub Repository:** [`adityabht7/Predictive-Maintenance-Copilot-IIoT`](https://github.com/adityabht7/Predictive-Maintenance-Copilot-IIoT)
+- **1-Click Streamlit Cloud Deployment:** [Deploy to Streamlit Cloud](https://share.streamlit.io/deploy?repository=adityabht7/Predictive-Maintenance-Copilot-IIoT&branch=main&mainModule=app.py)
+- **Local SCADA App:** `http://localhost:8501`
 
 ---
 
