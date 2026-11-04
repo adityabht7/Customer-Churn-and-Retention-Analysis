@@ -90,7 +90,7 @@ class WorkOrder:
     est_labor_rate_usd_hr: float
     recommended_parts: List[WorkOrderItem]
     action_instructions: str
-    dispatched_by: str = "AuraVibe IIoT Copilot Engine"
+    dispatched_by: str = "AuraVibe Condition Monitoring & Reliability System"
 
     @property
     def total_parts_cost(self) -> float:

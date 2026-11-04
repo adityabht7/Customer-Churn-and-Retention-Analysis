@@ -17,7 +17,7 @@ import streamlit as st
 
 # Configure Streamlit page layout
 st.set_page_config(
-    page_title="AuraVibe IIoT | Predictive Maintenance Copilot",
+    page_title="AuraVibe IIoT | Plant Reliability Platform",
     page_icon="⚙️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -146,8 +146,8 @@ current_roi = economics.calculate_intervention_roi(st.session_state.active_asset
 # --- TOP NAVIGATION & HEADER ---
 col_head1, col_head2 = st.columns([3, 1])
 with col_head1:
-    st.title("AuraVibe IIoT | Asset Reliability Copilot")
-    st.caption("Continuous Condition Monitoring • ISO 10816-3 Vibration Severity • RUL Prognostics • Automated CMMS Dispatch")
+    st.title("AuraVibe IIoT | Plant Reliability & Machinery Diagnostics")
+    st.caption("Continuous Telemetry Acquisition • ISO 10816-3 Vibration Severity • RUL Prognostics • Automated CMMS Dispatch")
 with col_head2:
     st.write("")
     if current_health.status_label == "NORMAL":
@@ -203,8 +203,8 @@ st.write("")
 tab_fleet, tab_twin, tab_ml, tab_copilot, tab_roi, tab_batch = st.tabs([
     "Fleet SCADA Overview",
     "Digital Twin & Telemetry",
-    "ML Diagnostics & Prognostics",
-    "AI Reliability Copilot & CMMS",
+    "Model Diagnostics & Prognostics",
+    "Machinery Diagnostics & CMMS",
     "Downtime Economics & ROI",
     "Batch Telemetry Export",
 ])
@@ -512,11 +512,11 @@ with tab_ml:
         st.table(pd.DataFrame(bench_rows))
 
 # =========================================================================
-# TAB 4: AI RELIABILITY COPILOT & CMMS
+# TAB 4: MACHINERY DIAGNOSTICS & CMMS
 # =========================================================================
 with tab_copilot:
-    st.subheader("Industrial Reliability Engineering Copilot")
-    st.caption("Context-aware diagnostic assistant providing prescriptive guidance, root-cause attribution, and formal CMMS dispatch.")
+    st.subheader("Field Machinery Diagnostics & CMMS Dispatch")
+    st.caption("Condition-based prescriptive guidance, root-cause attribution, and formal ISO 13374 work order dispatch.")
 
     cop_col1, cop_col2 = st.columns([1.1, 1])
 
@@ -528,18 +528,18 @@ with tab_copilot:
             f"What OEM spare parts and BOM must be staged for repair?",
             f"What are the mandatory Lockout/Tagout (LOTO) safety protocols?",
         ]
-        preset_prompt = st.selectbox("Select Quick Engineering Query", prompt_options)
+        preset_prompt = st.selectbox("Select Engineering Query", prompt_options)
         custom_prompt = st.text_input("Or enter custom maintenance inquiry:", value=preset_prompt)
 
-        if st.button("Query Copilot ➔", use_container_width=True):
+        if st.button("Evaluate Machinery Diagnosis ➔", use_container_width=True):
             response_text = copilot.ask_copilot(custom_prompt, current_reading, current_health)
             st.session_state.copilot_history.insert(0, {"query": custom_prompt, "response": response_text})
 
         # Display latest responses
         if st.session_state.copilot_history:
             latest = st.session_state.copilot_history[0]
-            with st.chat_message("assistant"):
-                st.markdown(f"**Q: {latest['query']}**")
+            with st.container(border=True):
+                st.markdown(f"**Diagnostic Query:** `{latest['query']}`")
                 st.markdown(latest["response"])
 
         st.subheader("Primary Sensor Attribution Breakdown")
