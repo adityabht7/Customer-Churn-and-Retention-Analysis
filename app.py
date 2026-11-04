@@ -6,6 +6,7 @@ from __future__ import annotations
 import os
 import sys
 import json
+import textwrap
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
@@ -14,7 +15,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import streamlit as st
 
-# Configure Streamlit page layout and dark industrial branding
+# Configure Streamlit page layout
 st.set_page_config(
     page_title="AuraVibe IIoT | Predictive Maintenance Copilot",
     page_icon="⚙️",
@@ -22,124 +23,14 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Custom Industrial CSS for DCS / SCADA dark UI aesthetic
-st.markdown(
-    """
-    <style>
-    /* Dark SCADA color variables */
-    :root {
-        --bg-main: #090d16;
-        --card-bg: #111827;
-        --border-color: #1f293d;
-        --accent-cyan: #38bdf8;
-        --accent-green: #10b981;
-        --accent-amber: #f59e0b;
-        --accent-red: #ef4444;
-    }
-    
-    .stApp {
-        background-color: #0b0f19;
-        color: #e2e8f0;
-    }
-    
-    /* Header brand styling */
-    .brand-title {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-        font-size: 1.65rem;
-        font-weight: 700;
-        letter-spacing: -0.5px;
-        color: #f8fafc;
-        margin-bottom: 0px;
-    }
-    .brand-subtitle {
-        font-size: 0.85rem;
-        color: #94a3b8;
-        letter-spacing: 0.2px;
-        margin-top: 2px;
-        margin-bottom: 12px;
-    }
+# Helper to render clean un-indented HTML/CSS when needed
+def render_html(html_str: str):
+    clean = textwrap.dedent(html_str).strip()
+    if hasattr(st, "html"):
+        st.html(clean)
+    else:
+        st.markdown(clean, unsafe_allow_html=True)
 
-    /* Metric card */
-    .metric-card {
-        background: #111827;
-        border: 1px solid #1f293d;
-        border-radius: 8px;
-        padding: 14px 16px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-    }
-    .metric-label {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        font-weight: 600;
-        letter-spacing: 0.8px;
-        color: #94a3b8;
-    }
-    .metric-value {
-        font-size: 1.6rem;
-        font-weight: 700;
-        color: #f8fafc;
-        margin-top: 4px;
-        font-variant-numeric: tabular-nums;
-    }
-    .metric-sub {
-        font-size: 0.78rem;
-        color: #64748b;
-        margin-top: 4px;
-    }
-
-    /* Status badges */
-    .badge-normal {
-        background-color: rgba(16, 185, 129, 0.15);
-        color: #34d399;
-        border: 1px solid rgba(16, 185, 129, 0.4);
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-    .badge-advisory {
-        background-color: rgba(59, 130, 246, 0.15);
-        color: #60a5fa;
-        border: 1px solid rgba(59, 130, 246, 0.4);
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-    .badge-warning {
-        background-color: rgba(245, 158, 11, 0.15);
-        color: #fbbf24;
-        border: 1px solid rgba(245, 158, 11, 0.4);
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-    .badge-critical {
-        background-color: rgba(239, 68, 68, 0.18);
-        color: #f87171;
-        border: 1px solid rgba(239, 68, 68, 0.5);
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-
-    /* Terminal container */
-    .copilot-terminal {
-        background: #0d131f;
-        border: 1px solid #1e293b;
-        border-radius: 6px;
-        padding: 14px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
-        color: #e2e8f0;
-        font-size: 0.88rem;
-        line-height: 1.5;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
 
 # Imports from src
 from src.core.constants import (
@@ -163,7 +54,6 @@ def load_core_engine():
     """Initializes and caches the predictive pipeline and telemetry simulator."""
     model_path = "models/predictive_maintenance_pipeline.joblib"
     if not os.path.exists(model_path):
-        # Auto-train if not yet built
         from scripts.train_models import run_training_pipeline
         run_training_pipeline()
 
@@ -191,14 +81,8 @@ if "copilot_history" not in st.session_state:
 
 # --- SIDEBAR: Operational Controls & SCADA Configuration ---
 with st.sidebar:
-    st.markdown("### Plant Telemetry Controls")
-    st.markdown(
-        "<div style='font-size:0.8rem; color:#94a3b8; margin-bottom:12px;'>"
-        "Process Unit: <b>Bay 3 Hydrocarbon Extraction Circuit</b><br/>"
-        "Condition Standard: <b>ISO 10816-3 Class III</b>"
-        "</div>",
-        unsafe_allow_html=True,
-    )
+    st.header("Plant Telemetry Controls")
+    st.caption("Process Unit: **Bay 3 Hydrocarbon Extraction Circuit**  \nCondition Standard: **ISO 10816-3 Class III**")
 
     asset_options = [f"{a['asset_id']} — {a['asset_name']}" for a in FLEET_ASSETS]
     current_asset_index = [a["asset_id"] for a in FLEET_ASSETS].index(st.session_state.active_asset_id)
@@ -206,8 +90,8 @@ with st.sidebar:
     selected_asset_id = selected_asset_str.split(" — ")[0]
     st.session_state.active_asset_id = selected_asset_id
 
-    st.markdown("---")
-    st.markdown("#### Scenario & Fault Injection")
+    st.divider()
+    st.subheader("Scenario & Fault Injection")
 
     preset = st.selectbox(
         "Load Diagnostic Scenario Preset",
@@ -234,7 +118,7 @@ with st.sidebar:
     st.session_state.injected_fault = injected_fault_mode
     st.session_state.operational_stress = stress_val
 
-    st.markdown("---")
+    st.divider()
     col_tick, col_reset = st.columns(2)
     with col_tick:
         if st.button("Poll Telemetry ↻", use_container_width=True):
@@ -246,12 +130,7 @@ with st.sidebar:
             st.session_state.operational_stress = 1.0
             st.rerun()
 
-    st.markdown(
-        f"<div style='font-size:0.75rem; color:#64748b; margin-top:14px; text-align:center;'>"
-        f"SCADA Scan Cycle: #{st.session_state.simulation_step} | ISO 13374 Verified"
-        f"</div>",
-        unsafe_allow_html=True,
-    )
+    st.caption(f"SCADA Scan Cycle: #{st.session_state.simulation_step} | ISO 13374 Verified")
 
 # Generate current asset telemetry and assessment
 current_reading = simulator.generate_single_reading(
@@ -267,84 +146,58 @@ current_roi = economics.calculate_intervention_roi(st.session_state.active_asset
 # --- TOP NAVIGATION & HEADER ---
 col_head1, col_head2 = st.columns([3, 1])
 with col_head1:
-    st.markdown("<div class='brand-title'>AuraVibe IIoT | Asset Reliability & Predictive Maintenance</div>", unsafe_allow_html=True)
-    st.markdown(
-        f"<div class='brand-subtitle'>Continuous Condition Monitoring • ISO 10816-3 Vibration Severity • RUL Prognostics • Automated CMMS Dispatch</div>",
-        unsafe_allow_html=True,
-    )
+    st.title("AuraVibe IIoT | Asset Reliability Copilot")
+    st.caption("Continuous Condition Monitoring • ISO 10816-3 Vibration Severity • RUL Prognostics • Automated CMMS Dispatch")
 with col_head2:
-    status_class = f"badge-{current_health.status_label.lower()}"
-    st.markdown(
-        f"""
-        <div style='text-align:right; padding-top:4px;'>
-            <span style='font-size:0.8rem; color:#94a3b8; margin-right:8px;'>STATUS:</span>
-            <span class='{status_class}'>{current_health.status_label}</span>
-            <div style='font-size:0.75rem; color:#64748b; margin-top:4px;'>Target: {current_reading.asset_id}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.write("")
+    if current_health.status_label == "NORMAL":
+        st.success(f"**STATUS: NORMAL**  \nTarget: `{current_reading.asset_id}`")
+    elif current_health.status_label == "ADVISORY":
+        st.info(f"**STATUS: ADVISORY**  \nTarget: `{current_reading.asset_id}`")
+    elif current_health.status_label == "WARNING":
+        st.warning(f"**STATUS: WARNING**  \nTarget: `{current_reading.asset_id}`")
+    else:
+        st.error(f"**STATUS: CRITICAL**  \nTarget: `{current_reading.asset_id}`")
 
 # --- TOP KPI METRICS BAR ---
 kpi1, kpi2, kpi3, kpi4, kpi5 = st.columns(5)
 with kpi1:
-    st.markdown(
-        f"""
-        <div class='metric-card'>
-            <div class='metric-label'>Health Index</div>
-            <div class='metric-value' style='color:{ "#10b981" if current_health.health_index > 75 else "#f59e0b" if current_health.health_index > 45 else "#ef4444" };'>{current_health.health_index:.1f}%</div>
-            <div class='metric-sub'>Baseline Target: 100.0%</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    st.metric(
+        label="Equipment Health Index",
+        value=f"{current_health.health_index:.1f}%",
+        delta=f"{current_health.health_index - 100:.1f}% vs baseline",
+        delta_color="normal",
     )
 with kpi2:
-    iso_color = ISO_10816_ZONES[current_health.iso_severity_zone]["color"]
-    st.markdown(
-        f"""
-        <div class='metric-card'>
-            <div class='metric-label'>ISO 10816 Severity</div>
-            <div class='metric-value' style='color:{iso_color};'>{current_health.iso_severity_zone[-1]}</div>
-            <div class='metric-sub'>{current_reading.vibration_de_rms:.2f} mm/s RMS (Drive-End)</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    st.metric(
+        label="ISO 10816-3 Severity",
+        value=f"Zone {current_health.iso_severity_zone[-1]}",
+        delta=f"{current_reading.vibration_de_rms:.2f} mm/s RMS",
+        delta_color="off",
     )
 with kpi3:
-    st.markdown(
-        f"""
-        <div class='metric-card'>
-            <div class='metric-label'>Forecasted RUL</div>
-            <div class='metric-value'>{current_health.predicted_rul_hrs:.0f} <span style='font-size:0.9rem;'>HRS</span></div>
-            <div class='metric-sub'>90% CI: [{current_health.rul_confidence_lower_hrs:.0f} – {current_health.rul_confidence_upper_hrs:.0f}h]</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    st.metric(
+        label="Forecasted RUL",
+        value=f"{current_health.predicted_rul_hrs:.0f} hrs",
+        delta=f"[{current_health.rul_confidence_lower_hrs:.0f}–{current_health.rul_confidence_upper_hrs:.0f}h 90% CI]",
+        delta_color="off",
     )
 with kpi4:
-    st.markdown(
-        f"""
-        <div class='metric-card'>
-            <div class='metric-label'>Diagnosed Mode</div>
-            <div class='metric-value' style='font-size:1.15rem; font-weight:600; margin-top:8px;'>{current_health.predicted_failure_mode_name[:20]}</div>
-            <div class='metric-sub'>ML Confidence: {current_health.failure_probability*100:.1f}%</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    st.metric(
+        label="Diagnosed Mode",
+        value=current_health.predicted_failure_mode_name[:18],
+        delta=f"{current_health.failure_probability*100:.0f}% confidence",
+        delta_color="off",
     )
 with kpi5:
-    st.markdown(
-        f"""
-        <div class='metric-card'>
-            <div class='metric-label'>Avoided Outage Loss</div>
-            <div class='metric-value' style='color:#38bdf8;'>${current_roi['net_savings_usd']:,.0f}</div>
-            <div class='metric-sub'>ROI: {current_roi['roi_percentage']:.0f}% vs Emergency Run</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    st.metric(
+        label="Avoided Outage Loss",
+        value=f"${current_roi['net_savings_usd']:,.0f}",
+        delta=f"ROI: {current_roi['roi_percentage']:.0f}%",
+        delta_color="normal",
     )
 
-st.markdown("<div style='margin-bottom:14px;'></div>", unsafe_allow_html=True)
+st.write("")
 
 # --- APPLICATION TABS ---
 tab_fleet, tab_twin, tab_ml, tab_copilot, tab_roi, tab_batch = st.tabs([
@@ -360,19 +213,13 @@ tab_fleet, tab_twin, tab_ml, tab_copilot, tab_roi, tab_batch = st.tabs([
 # TAB 1: FLEET SCADA OVERVIEW
 # =========================================================================
 with tab_fleet:
-    st.markdown("### Plant-Wide Asset Condition Matrix")
-    st.markdown(
-        "<div style='font-size:0.85rem; color:#94a3b8; margin-bottom:16px;'>"
-        "Real-time synchronized condition monitoring across all monitored rotating assets in Processing Unit 3."
-        "</div>",
-        unsafe_allow_html=True,
-    )
+    st.subheader("Plant-Wide Asset Condition Matrix")
+    st.caption("Real-time synchronized condition monitoring across all monitored rotating assets in Processing Unit 3.")
 
     # Generate telemetry for all 6 fleet assets
     fleet_rows = []
     for asset in FLEET_ASSETS:
         aid = asset["asset_id"]
-        # Apply current fault to selected asset, nominal to others
         a_fault = st.session_state.injected_fault if aid == st.session_state.active_asset_id else 0
         a_stress = st.session_state.operational_stress if aid == st.session_state.active_asset_id else 1.0
         r = simulator.generate_single_reading(aid, operational_stress=a_stress, injected_fault=a_fault)
@@ -427,43 +274,30 @@ with tab_fleet:
         hide_index=True,
     )
 
-    st.markdown("#### ISO 10816-3 Vibration Severity Reference Guide")
+    st.subheader("ISO 10816-3 Machinery Vibration Severity Reference")
     iso_cols = st.columns(4)
     zones = [
-        ("Zone A (0.1 – 2.8 mm/s)", "Good / Newly Commissioned", "#10b981", "Permissible for unrestricted continuous long-term operation."),
-        ("Zone B (2.8 – 4.5 mm/s)", "Satisfactory Condition", "#3b82f6", "Normally considered acceptable for unrestricted long-term operation."),
-        ("Zone C (4.5 – 7.1 mm/s)", "Alert / Restricted", "#f59e0b", "Unsatisfactory for continuous long-term service. Plan turnaround."),
-        ("Zone D (> 7.1 mm/s)", "Critical / Damage Imminent", "#ef4444", "Vibration severity sufficient to cause severe mechanical failure."),
+        ("Zone A (0.1 – 2.8 mm/s)", "Good / Newly Commissioned", "Permissible for unrestricted continuous long-term operation."),
+        ("Zone B (2.8 – 4.5 mm/s)", "Satisfactory Condition", "Acceptable for continuous unrestricted industrial service."),
+        ("Zone C (4.5 – 7.1 mm/s)", "Alert / Restricted", "Unsatisfactory for continuous duty. Schedule maintenance window."),
+        ("Zone D (> 7.1 mm/s)", "Critical / Damage Imminent", "Vibration severity sufficient to cause mechanical failure. Interlock trip."),
     ]
-    for idx, (title, sub, color, desc) in enumerate(zones):
+    for idx, (title, sub, desc) in enumerate(zones):
         with iso_cols[idx]:
-            st.markdown(
-                f"""
-                <div style='background:#111827; border-left:4px solid {color}; border-radius:4px; padding:10px 12px;'>
-                    <div style='font-size:0.8rem; font-weight:700; color:{color};'>{title}</div>
-                    <div style='font-size:0.75rem; font-weight:600; color:#f8fafc; margin-top:2px;'>{sub}</div>
-                    <div style='font-size:0.72rem; color:#94a3b8; margin-top:4px;'>{desc}</div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            with st.container(border=True):
+                st.markdown(f"**{title}**")
+                st.caption(f"_{sub}_\n\n{desc}")
 
 # =========================================================================
 # TAB 2: DIGITAL TWIN & TELEMETRY
 # =========================================================================
 with tab_twin:
-    st.markdown(f"### Digital Twin Sensor Telemetry: {current_reading.asset_id}")
-    st.markdown(
-        f"<div style='font-size:0.85rem; color:#94a3b8; margin-bottom:14px;'>"
-        f"Multi-channel continuous streaming telemetry and fast Fourier transform (FFT) harmonic spectral analysis."
-        f"</div>",
-        unsafe_allow_html=True,
-    )
+    st.subheader(f"Digital Twin Sensor Telemetry: {current_reading.asset_id}")
+    st.caption("Multi-channel continuous streaming telemetry and fast Fourier transform (FFT) harmonic spectral analysis.")
 
     twin_col1, twin_col2 = st.columns([1.6, 1])
 
     with twin_col1:
-        # Time-series synthetic lead-up trend
         trend_df = simulator.generate_degradation_trajectory(
             asset_id=st.session_state.active_asset_id,
             failure_mode=st.session_state.injected_fault,
@@ -477,7 +311,6 @@ with tab_twin:
             subplot_titles=("Vibration Velocity RMS (Drive-End vs Non-Drive-End)", "Thermal & Hydraulic Dynamics"),
         )
 
-        # Row 1: Vibration
         fig_trend.add_trace(
             go.Scatter(y=trend_df["vibration_de_rms"], mode="lines", name="DE Vibe RMS (mm/s)", line=dict(color="#38bdf8", width=2)),
             row=1, col=1,
@@ -486,11 +319,9 @@ with tab_twin:
             go.Scatter(y=trend_df["vibration_nde_rms"], mode="lines", name="NDE Vibe RMS (mm/s)", line=dict(color="#94a3b8", width=1.5, dash="dot")),
             row=1, col=1,
         )
-        # Add ISO threshold lines
         fig_trend.add_hline(y=4.5, line_dash="dash", line_color="#f59e0b", annotation_text="ISO Zone C (4.5)", row=1, col=1)
         fig_trend.add_hline(y=7.1, line_dash="dash", line_color="#ef4444", annotation_text="ISO Zone D (7.1)", row=1, col=1)
 
-        # Row 2: Temperatures
         fig_trend.add_trace(
             go.Scatter(y=trend_df["bearing_temperature_c"], mode="lines", name="Bearing Temp (°C)", line=dict(color="#f97316", width=2)),
             row=2, col=1,
@@ -511,7 +342,6 @@ with tab_twin:
         st.plotly_chart(fig_trend, use_container_width=True)
 
     with twin_col2:
-        # FFT Spectral Breakdown
         freqs, spectrum = compute_spectral_harmonics(
             rpm=current_reading.rotational_speed_rpm,
             vibration_rms=current_reading.vibration_de_rms,
@@ -544,8 +374,7 @@ with tab_twin:
         )
         st.plotly_chart(fig_fft, use_container_width=True)
 
-    # Detailed sensor readings table
-    st.markdown("#### Real-Time Sensor Telemetry Snapshot")
+    st.subheader("Real-Time Sensor Telemetry Snapshot")
     s_col1, s_col2, s_col3, s_col4 = st.columns(4)
     with s_col1:
         st.metric("Rotational Speed", f"{current_reading.rotational_speed_rpm:.0f} RPM")
@@ -564,18 +393,12 @@ with tab_twin:
 # TAB 3: ML DIAGNOSTICS & PROGNOSTICS
 # =========================================================================
 with tab_ml:
-    st.markdown("### Machine Learning Model Diagnostics & Prognostics")
-    st.markdown(
-        "<div style='font-size:0.85rem; color:#94a3b8; margin-bottom:14px;'>"
-        "Multi-class failure mode classification probabilities, RUL regression with confidence bounds, and benchmark comparisons."
-        "</div>",
-        unsafe_allow_html=True,
-    )
+    st.subheader("Machine Learning Model Diagnostics & Prognostics")
+    st.caption("Multi-class failure mode classification probabilities, RUL regression with confidence bounds, and benchmark comparisons.")
 
     ml_col1, ml_col2 = st.columns(2)
 
     with ml_col1:
-        # Failure mode probabilities
         df_single = pd.DataFrame([current_reading.to_dict()])[FEATURE_COLUMNS]
         fault_probs = pipeline.classifier.predict_proba(df_single)[0]
 
@@ -611,7 +434,6 @@ with tab_ml:
         st.plotly_chart(fig_prob, use_container_width=True)
 
     with ml_col2:
-        # RUL Degradation Projection Curve
         traj = simulator.generate_degradation_trajectory(
             asset_id=st.session_state.active_asset_id,
             failure_mode=current_health.predicted_failure_mode_id,
@@ -662,8 +484,7 @@ with tab_ml:
         )
         st.plotly_chart(fig_rul, use_container_width=True)
 
-    # Benchmark comparison table from JSON
-    st.markdown("#### Model Architecture Benchmark & Cross-Validation Results")
+    st.subheader("Model Architecture Benchmark & Cross-Validation Results")
     metrics_path = "models/benchmark_metrics.json"
     if os.path.exists(metrics_path):
         with open(metrics_path, "r") as f:
@@ -694,18 +515,13 @@ with tab_ml:
 # TAB 4: AI RELIABILITY COPILOT & CMMS
 # =========================================================================
 with tab_copilot:
-    st.markdown("### Industrial Reliability Engineering Copilot")
-    st.markdown(
-        "<div style='font-size:0.85rem; color:#94a3b8; margin-bottom:14px;'>"
-        "Context-aware diagnostic assistant providing prescriptive guidance, root-cause attribution, and formal CMMS dispatch."
-        "</div>",
-        unsafe_allow_html=True,
-    )
+    st.subheader("Industrial Reliability Engineering Copilot")
+    st.caption("Context-aware diagnostic assistant providing prescriptive guidance, root-cause attribution, and formal CMMS dispatch.")
 
     cop_col1, cop_col2 = st.columns([1.1, 1])
 
     with cop_col1:
-        st.markdown("#### Diagnostic Query Console")
+        st.subheader("Diagnostic Query Console")
         prompt_options = [
             f"What is the root cause diagnosis for {current_reading.asset_id}?",
             f"What is the forecasted remaining useful life and time-to-trip?",
@@ -722,18 +538,11 @@ with tab_copilot:
         # Display latest responses
         if st.session_state.copilot_history:
             latest = st.session_state.copilot_history[0]
-            st.markdown(
-                f"""
-                <div class='copilot-terminal' style='margin-top:12px;'>
-                    <div style='color:#38bdf8; font-weight:700; margin-bottom:6px;'>Q: {latest['query']}</div>
-                    <div style='color:#cbd5e1;'>{latest['response']}</div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            with st.chat_message("assistant"):
+                st.markdown(f"**Q: {latest['query']}**")
+                st.markdown(latest["response"])
 
-        # Root cause sensor deviation ranking
-        st.markdown("#### Primary Sensor Attribution Breakdown")
+        st.subheader("Primary Sensor Attribution Breakdown")
         deviations = root_cause.attribute_deviations(current_reading)
         df_dev = pd.DataFrame(deviations[:6])
         st.dataframe(
@@ -750,32 +559,31 @@ with tab_copilot:
         )
 
     with cop_col2:
-        st.markdown("#### Automated CMMS Work Order Dispatch")
-        st.markdown(
-            f"""
-            <div style='background:#111827; border:1px solid #1f293d; border-radius:8px; padding:16px;'>
-                <div style='display:flex; justify-content:space-between; align-items:center;'>
-                    <span style='font-size:1.05rem; font-weight:700; color:#f8fafc;'>{current_work_order.work_order_id}</span>
-                    <span class='badge-{current_health.status_label.lower()}'>{current_work_order.priority}</span>
-                </div>
-                <div style='font-size:0.8rem; color:#94a3b8; margin-top:4px;'>Dispatched: {current_work_order.created_at}</div>
-                <hr style='border-color:#1f293d; margin:10px 0;' />
-                <div style='font-size:0.84rem; line-height:1.6;'>
-                    <b>Asset Target:</b> {current_work_order.asset_id} — {current_work_order.asset_name}<br/>
-                    <b>Location:</b> {current_work_order.location}<br/>
-                    <b>Assigned Trade Craft:</b> {current_work_order.required_craft}<br/>
-                    <b>FMEA Failure Code:</b> {current_work_order.fmea_failure_mode} (Severity: {current_work_order.fmea_severity}/10)<br/>
-                    <b>LOTO Protocol:</b> {'<font color="#ef4444">' + str(current_work_order.loto_procedure) + '</font>' if current_work_order.loto_required else 'Non-invasive'}<br/>
-                    <b>Estimated Labor:</b> {current_work_order.est_labor_hours} hrs @ ${current_work_order.est_labor_rate_usd_hr}/hr (${current_work_order.total_labor_cost:.2f})<br/>
-                    <b>Parts Requisition Subtotal:</b> ${current_work_order.total_parts_cost:,.2f}<br/>
-                    <b>Total Estimated Work Order Cost:</b> <span style='color:#38bdf8; font-weight:700;'>${current_work_order.total_estimated_cost:,.2f}</span>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        st.subheader("Automated CMMS Work Order Dispatch")
+        with st.container(border=True):
+            wo_head_col, wo_badge_col = st.columns([2, 1])
+            with wo_head_col:
+                st.markdown(f"### `{current_work_order.work_order_id}`")
+                st.caption(f"Dispatched: {current_work_order.created_at}")
+            with wo_badge_col:
+                st.info(f"**{current_work_order.priority}**")
 
-        st.markdown("##### Staged OEM Spare Parts BOM")
+            st.markdown(f"**Asset Target:** {current_work_order.asset_id} — {current_work_order.asset_name}")
+            st.markdown(f"**Location:** {current_work_order.location}  \n**Trade Craft:** {current_work_order.required_craft}")
+            st.markdown(f"**FMEA Failure Code:** {current_work_order.fmea_failure_mode} (Severity: {current_work_order.fmea_severity}/10)")
+            
+            if current_work_order.loto_required:
+                st.error(f"**Mandatory LOTO Protocol:** {current_work_order.loto_procedure}")
+            else:
+                st.success("**LOTO Status:** Non-invasive monitoring")
+
+            st.markdown(
+                f"**Labor Estimate:** {current_work_order.est_labor_hours} hrs @ ${current_work_order.est_labor_rate_usd_hr}/hr (${current_work_order.total_labor_cost:.2f})  \n"
+                f"**Parts Requisition:** ${current_work_order.total_parts_cost:,.2f}  \n"
+                f"**Total Work Order Estimate:** **${current_work_order.total_estimated_cost:,.2f}**"
+            )
+
+        st.markdown("**Staged OEM Spare Parts BOM**")
         if current_work_order.recommended_parts:
             parts_df = pd.DataFrame([
                 {
@@ -810,18 +618,13 @@ with tab_copilot:
 # TAB 5: DOWNTIME ECONOMICS & ROI
 # =========================================================================
 with tab_roi:
-    st.markdown("### Downtime Cost Avoidance & Reliability Financial Model")
-    st.markdown(
-        "<div style='font-size:0.85rem; color:#94a3b8; margin-bottom:14px;'>"
-        "Financial comparison of run-to-failure emergency breakdown versus early predictive maintenance turnaround."
-        "</div>",
-        unsafe_allow_html=True,
-    )
+    st.subheader("Downtime Cost Avoidance & Reliability Financial Model")
+    st.caption("Financial comparison of run-to-failure emergency breakdown versus early predictive maintenance turnaround.")
 
     roi_input_col, roi_chart_col = st.columns([1, 1.4])
 
     with roi_input_col:
-        st.markdown("#### Scenario Cost Parameters")
+        st.markdown("**Scenario Cost Parameters**")
         asset_hourly_loss = st.number_input(
             "Production Loss Rate ($/Hour)",
             min_value=500.0,
@@ -844,7 +647,7 @@ with tab_roi:
         )
 
     with roi_chart_col:
-        st.markdown("#### Cost Comparison: Breakdown vs Predictive Intervention")
+        st.markdown("**Cost Comparison: Breakdown vs Predictive Intervention**")
 
         cost_breakdown_df = pd.DataFrame([
             {"Category": "Production Loss", "Scenario": "Unplanned Breakdown", "Amount": custom_roi["unplanned"]["production_loss_usd"]},
@@ -860,7 +663,7 @@ with tab_roi:
             x="Scenario",
             y="Amount",
             color="Category",
-            title=f"Total Cost: ${custom_roi['unplanned']['total_cost_usd']:,.0f} (Unplanned) vs ${custom_roi['planned']['total_cost_usd']:,.0f} (Predictive)",
+            title=f"Total: ${custom_roi['unplanned']['total_cost_usd']:,.0f} (Unplanned) vs ${custom_roi['planned']['total_cost_usd']:,.0f} (Predictive)",
             barmode="stack",
             color_discrete_sequence=["#ef4444", "#f97316", "#f59e0b", "#38bdf8", "#10b981", "#6366f1"],
         )
@@ -873,28 +676,20 @@ with tab_roi:
         )
         st.plotly_chart(fig_cost, use_container_width=True)
 
-        st.markdown(
-            f"""
-            <div style='background:#111827; border:1px solid #10b981; border-radius:8px; padding:14px; text-align:center;'>
-                <div style='font-size:0.8rem; text-transform:uppercase; color:#94a3b8; font-weight:600;'>Estimated Net Capital Savings</div>
-                <div style='font-size:2.1rem; font-weight:800; color:#10b981; margin:4px 0;'>${custom_roi['net_savings_usd']:,.2f}</div>
-                <div style='font-size:0.85rem; color:#cbd5e1;'>Return on Predictive Investment (ROI): <b>{custom_roi['roi_percentage']:.1f}%</b></div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        with st.container(border=True):
+            st.metric(
+                label="Estimated Net Capital Savings",
+                value=f"${custom_roi['net_savings_usd']:,.2f}",
+                delta=f"ROI: {custom_roi['roi_percentage']:.1f}% vs run-to-failure",
+                delta_color="normal",
+            )
 
 # =========================================================================
 # TAB 6: BATCH TELEMETRY EXPORT
 # =========================================================================
 with tab_batch:
-    st.markdown("### Batch Telemetry Diagnostics & Prioritized Dispatch Export")
-    st.markdown(
-        "<div style='font-size:0.85rem; color:#94a3b8; margin-bottom:14px;'>"
-        "Process historical telemetry records in bulk, execute automated fleet triage, and export high-risk maintenance backlogs."
-        "</div>",
-        unsafe_allow_html=True,
-    )
+    st.subheader("Batch Telemetry Diagnostics & Prioritized Dispatch Export")
+    st.caption("Process historical telemetry records in bulk, execute automated fleet triage, and export high-risk maintenance backlogs.")
 
     batch_csv_path = "data/industrial_iot_telemetry.csv"
     if os.path.exists(batch_csv_path):
