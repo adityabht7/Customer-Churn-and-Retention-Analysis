@@ -255,24 +255,24 @@ with tab_fleet:
         avg_fleet_health = df_fleet["Health Index (%)"].mean()
         st.metric("Fleet Average Health", f"{avg_fleet_health:.1f}%")
 
-    # Interactive fleet grid
-    st.dataframe(
-        df_fleet,
-        column_config={
-            "Health Index (%)": st.column_config.ProgressColumn(
-                "Health Index",
-                help="Multi-sensor composite health score",
-                format="%.1f%%",
-                min_value=0,
-                max_value=100,
-            ),
-            "DE Vibe (mm/s)": st.column_config.NumberColumn(format="%.2f"),
-            "Bearing Temp (°C)": st.column_config.NumberColumn(format="%.1f"),
-            "RUL (hrs)": st.column_config.NumberColumn(format="%.0f"),
-        },
-        use_container_width=True,
-        hide_index=True,
-    )
+    # Fleet status table formatted for SCADA display
+    df_fleet_display = pd.DataFrame([
+        {
+            "Asset ID": r["Asset ID"],
+            "Equipment Name": r["Equipment Name"],
+            "Type": r["Asset Type"],
+            "DE Vibe RMS": f"{r['DE Vibe (mm/s)']:.2f} mm/s",
+            "Bearing Temp": f"{r['Bearing Temp (°C)']:.1f} °C",
+            "Delta-P": f"{r['Delta P (bar)']:.2f} bar",
+            "ISO 10816": r["ISO Zone"],
+            "Health Index": f"{r['Health Index (%)']:.1f}%",
+            "Diagnosed Mode": r["Diagnosis"],
+            "RUL Forecast": f"{r['RUL (hrs)']:.0f} hrs",
+            "Status": r["Status"],
+        }
+        for r in fleet_rows
+    ])
+    st.table(df_fleet_display)
 
     st.subheader("ISO 10816-3 Machinery Vibration Severity Reference")
     iso_cols = st.columns(4)
@@ -509,7 +509,7 @@ with tab_ml:
                 "ROC-AUC (OVR)": f"R²: {metrics['r2_score']:.4f}",
                 "Status": "Selected (Production)" if cand == "gradient_boosting" else "Evaluated",
             })
-        st.dataframe(pd.DataFrame(bench_rows), use_container_width=True, hide_index=True)
+        st.table(pd.DataFrame(bench_rows))
 
 # =========================================================================
 # TAB 4: AI RELIABILITY COPILOT & CMMS
@@ -544,19 +544,18 @@ with tab_copilot:
 
         st.subheader("Primary Sensor Attribution Breakdown")
         deviations = root_cause.attribute_deviations(current_reading)
-        df_dev = pd.DataFrame(deviations[:6])
-        st.dataframe(
-            df_dev[["sensor", "current_value", "baseline_nominal", "unit", "pct_change", "z_score"]],
-            column_config={
-                "sensor": "Sensor Channel",
-                "current_value": st.column_config.NumberColumn(format="%.2f"),
-                "baseline_nominal": st.column_config.NumberColumn(format="%.2f"),
-                "pct_change": st.column_config.NumberColumn(format="%+.1f%%"),
-                "z_score": st.column_config.NumberColumn(format="%+.2f σ"),
-            },
-            use_container_width=True,
-            hide_index=True,
-        )
+        df_dev_display = pd.DataFrame([
+            {
+                "Sensor Channel": d["sensor"],
+                "Current Reading": f"{d['current_value']:.2f} {d['unit']}",
+                "Baseline Nominal": f"{d['baseline_nominal']:.2f} {d['unit']}",
+                "Deviation (%)": f"{d['pct_change']:+.1f}%",
+                "Z-Score": f"{d['z_score']:+.2f} σ",
+                "Severity": d["direction"],
+            }
+            for d in deviations[:6]
+        ])
+        st.table(df_dev_display)
 
     with cop_col2:
         st.subheader("Automated CMMS Work Order Dispatch")
@@ -595,7 +594,7 @@ with tab_copilot:
                 }
                 for p in current_work_order.recommended_parts
             ])
-            st.dataframe(parts_df, use_container_width=True, hide_index=True)
+            st.table(parts_df)
         else:
             st.info("No OEM replacement parts required for nominal status.")
 
@@ -707,13 +706,11 @@ with tab_batch:
             (df_batch["iso_zone"].isin(sel_filter_iso))
         ]
 
-        st.dataframe(
+        st.table(
             filtered[[
                 "timestamp", "asset_id", "vibration_de_rms", "bearing_temperature_c",
                 "vibration_kurtosis", "pressure_differential_bar", "health_index", "iso_zone", "remaining_useful_life_hrs"
-            ]].head(100),
-            use_container_width=True,
-            hide_index=True,
+            ]].head(25)
         )
 
         csv_data = filtered.to_csv(index=False).encode("utf-8")
