@@ -1,0 +1,50 @@
+{
+  "dataset_samples": 9000,
+  "fleet_assets_count": 6,
+  "features": [
+    "rotational_speed_rpm",
+    "vibration_de_rms",
+    "vibration_nde_rms",
+    "vibration_kurtosis",
+    "vibration_crest_factor",
+    "bearing_temperature_c",
+    "motor_winding_temperature_c",
+    "hydraulic_pressure_bar",
+    "pressure_differential_bar",
+    "acoustic_emission_db",
+    "motor_current_amps",
+    "operational_hours"
+  ],
+  "classification_benchmarks": {
+    "hist_gradient_boosting": {
+      "macro_f1_mean": 0.9998366318704575,
+      "macro_f1_std": 0.00032673625908508086,
+      "balanced_acc_mean": 0.9999684791174154,
+      "roc_auc_mean": 1.0
+    },
+    "random_forest": {
+      "macro_f1_mean": 1.0,
+      "macro_f1_std": 0.0,
+      "balanced_acc_mean": 1.0,
+      "roc_auc_mean": 1.0
+    },
+    "logistic_regression": {
+      "macro_f1_mean": 1.0,
+      "macro_f1_std": 0.0,
+      "balanced_acc_mean": 1.0,
+      "roc_auc_mean": 1.0
+    }
+  },
+  "rul_benchmarks": {
+    "gradient_boosting": {
+      "rmse_hours": 20.167114596083454,
+      "mae_hours": 15.191753611708965,
+      "r2_score": 0.999076200519757
+    },
+    "random_forest": {
+      "rmse_hours": 19.924943090973006,
+      "mae_hours": 13.129570045283103,
+      "r2_score": 0.9990982537173596
+    }
+  }
+}
