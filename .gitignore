@@ -1,0 +1,22 @@
+# Python virtual environment
+.venv/
+venv/
+ENV/
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Environment variables & secrets
+.env
+.streamlit/secrets.toml
+
+# Vector database cache
+chroma_db/
+
+
+# OS artifacts
+.DS_Store
+Thumbs.db
