@@ -19,8 +19,10 @@ chroma_db/
 
 # Local personal documents (never upload to GitHub)
 *.pdf
+personal_docs/
 interview_prep/
 personal/
+scripts/generate_interview_guide.py
 
 # OS artifacts
 .DS_Store
